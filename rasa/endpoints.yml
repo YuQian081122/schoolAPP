@@ -1,0 +1,13 @@
+action_endpoint:
+  url: "http://localhost:5055/webhook"
+
+# Tracker Store 配置 - 用於持久化對話記錄
+tracker_store:
+  type: InMemoryTrackerStore
+  # 如果需要持久化到文件，可以使用：
+  # type: file
+  # path: ./tracker_store
+
+# 如果需要連接外部 NLU 服務，可以在這裡設定
+# nlu:
+#   url: "http://localhost:5005/model/parse"

@@ -1,9 +1,10 @@
 # Build dependencies
 setuptools>=41.0.0
 wheel
-cython
 
 # Main dependencies
 rasa==3.6.0
 rasa-sdk==3.6.0
 jieba>=0.42.1
+# Exclude PyYAML 5.4.1 which has build issues, use version with wheels
+pyyaml>=5.3.1,<6.0,!=5.4.1

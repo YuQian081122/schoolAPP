@@ -1,0 +1,143 @@
+version: "3.1"
+
+rules:
+  # 規則：問候後自動設置語言
+  - rule: 問候時設置語言
+    steps:
+      - intent: greet
+      - action: action_set_language
+      - action: action_greet
+
+  # 規則：告別時設置語言
+  - rule: 告別時設置語言
+    steps:
+      - intent: goodbye
+      - action: action_set_language
+      - action: utter_goodbye
+
+  # 規則：詢問功能時設置語言
+  - rule: 詢問功能時設置語言
+    steps:
+      - intent: ask_capabilities
+      - action: action_set_language
+      - action: utter_capabilities
+
+  # 規則：詢問身份時設置語言
+  - rule: 詢問身份時設置語言
+    steps:
+      - intent: ask_who_are_you
+      - action: action_set_language
+      - action: utter_who_are_you
+
+  # 規則：查詢時間
+  - rule: 查詢時間
+    steps:
+      - intent: ask_time
+      - action: action_get_current_time
+
+  # 規則：超出範圍的意圖
+  - rule: 處理超出範圍的意圖
+    steps:
+      - intent: out_of_scope
+      - action: action_set_language
+      - action: utter_default
+
+  # 規則：講笑話
+  - rule: 講笑話
+    steps:
+      - intent: tell_joke
+      - action: action_set_language
+      - action: action_tell_joke
+
+  # 規則：計算器
+  - rule: 計算器
+    steps:
+      - intent: calculate
+      - action: action_set_language
+      - action: action_calculator
+
+  # 規則：翻譯
+  - rule: 翻譯
+    steps:
+      - intent: translate
+      - action: action_set_language
+      - action: action_translate
+
+  # 規則：勵志名言
+  - rule: 勵志名言
+    steps:
+      - intent: motivational_quote
+      - action: action_set_language
+      - action: action_motivational_quote
+
+  # 規則：隨機小知識
+  - rule: 隨機小知識
+    steps:
+      - intent: random_fact
+      - action: action_set_language
+      - action: action_random_fact
+
+  # 規則：讚美
+  - rule: 讚美
+    steps:
+      - intent: compliment
+      - action: action_set_language
+      - action: action_compliment
+
+  # 規則：設置提醒
+  - rule: 設置提醒
+    steps:
+      - intent: set_reminder
+      - action: action_set_language
+      - action: action_set_reminder
+
+  # 規則：查詢校區資訊（有指定校區）
+  - rule: 查詢校區資訊（有校區）
+    steps:
+      - intent: query_campus_info
+        entities:
+          - campus
+      - action: action_set_language
+      - action: action_query_campus_stats
+      - action: utter_campus_info
+
+  # 規則：查詢校區資訊（沒有指定校區）
+  - rule: 查詢校區資訊（無校區）
+    steps:
+      - intent: query_campus_info
+      - action: action_set_language
+      - action: utter_ask_campus
+
+  # 規則：查詢建築資訊（智能提取，即使沒有實體也能處理）
+  - rule: 查詢建築資訊
+    steps:
+      - intent: ask_building_info
+      - action: action_set_language
+      - action: action_ask_building_info
+
+  # 規則：查詢建築設施（智能提取，即使沒有實體也能處理）
+  - rule: 查詢建築設施
+    steps:
+      - intent: query_building_facilities
+      - action: action_set_language
+      - action: action_query_building_facilities
+
+  # 規則：回報設施問題（打開表單）
+  - rule: 回報設施問題（打開表單）
+    steps:
+      - intent: report_facility_issue
+      - action: action_set_language
+      - action: action_report_facility_issue
+
+  # 注意：report_facility_problem 不需要規則，因為：
+  # 1. action_report_facility_problem 內部已經有智能提取邏輯，可以處理所有情況
+  # 2. 故事已經描述了各種情況（完整資訊、缺少建築、缺少樓層等）
+  # 3. 添加規則會與故事衝突，因為故事描述了需要先詢問缺失資訊的情況
+
+  # 規則：快速回報
+  - rule: 快速回報
+    steps:
+      - intent: quick_report
+      - action: action_set_language
+      - action: action_quick_report
+

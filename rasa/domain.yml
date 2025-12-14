@@ -1,0 +1,377 @@
+version: "3.1"
+
+intents:
+  - greet
+  - goodbye
+  - find_nearest_toilet
+  - find_nearest_water
+  - find_nearest_trash
+  - query_campus_info
+  - ask_who_are_you
+  - ask_capabilities
+  - ask_time
+  - affirm
+  - deny
+  - report_facility_issue
+  - report_facility_problem
+  - update_facility_status
+  - update_floor_status
+  - query_floor_status
+  - query_building_facilities
+  - switch_campus
+  - filter_facilities
+  - search_facility
+  - get_smart_route
+  - query_facility_history
+  - get_statistics
+  - set_preference
+  - get_preferences
+  - quick_report
+  - query_issue_history
+  - ask_campus_events
+  - ask_building_info
+  - ask_emergency_contact
+  - ask_parking_info
+  - ask_dining_info
+  - ask_library_hours
+  - ask_weather
+  - ask_campus_tips
+  - get_user_location
+  - find_nearest_functional_facility
+  - query_facility_gps
+  - query_facility_status
+  - query_facilities_by_status
+  - navigate_to_functional_facility
+  - get_facility_gps_points
+  - query_nearby_facilities_status
+  - compare_facilities
+  - get_facilities_by_status
+  - get_facilities_sorted_by_distance
+  - get_facility_statistics
+  - batch_query_facilities
+  - show_progress
+  - smart_error_recovery
+  - recommend_facility
+  - smart_suggestions
+  - format_rich_response
+  - out_of_scope
+  - tell_joke
+  - calculate
+  - translate
+  - motivational_quote
+  - random_fact
+  - compliment
+  - set_reminder
+
+entities:
+  - facility_type
+  - campus
+  - building
+  - floor
+  - status
+  - gender
+  - problem_description
+  - severity
+
+slots:
+  facility_type:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: facility_type
+  campus:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: campus
+  building:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: building
+  floor:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: floor
+  status:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: status
+  gender:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: gender
+  problem_description:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: problem_description
+  severity:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: severity
+  language:
+    type: text
+    mappings: []
+  radius:
+    type: float
+    mappings: []
+  update_confirmed:
+    type: bool
+    mappings: []
+  progress:
+    type: float
+    mappings: []
+  progress_message:
+    type: text
+    mappings: []
+  error_type:
+    type: text
+    mappings: []
+  facility_data:
+    type: any
+    mappings: []
+
+responses:
+  utter_greet:
+    # 英文回應 - 簡短多樣且幽默
+    - condition:
+        - type: slot
+          name: language
+          value: en
+      text: "Hi! 👋 I'm your campus AI assistant. How can I help?"
+    - condition:
+        - type: slot
+          name: language
+          value: en
+      text: "Hey there! 😊 Your friendly neighborhood AI assistant here! What can I do for you today?"
+    - condition:
+        - type: slot
+          name: language
+          value: en
+      text: "Hello! 🤖 I'm here to help you find facilities and make your campus life easier! What do you need?"
+    - condition:
+        - type: slot
+          name: language
+          value: en
+      text: "Hello! 😊 Need help finding facilities?"
+    - condition:
+        - type: slot
+          name: language
+          value: en
+      text: "Hey! 👋 What do you need?"
+    - condition:
+        - type: slot
+          name: language
+          value: en
+      text: "Hi there! 🗺️ Ready to explore campus?"
+    - condition:
+        - type: slot
+          name: language
+          value: en
+      text: "Hello! 😄 I can help you find restrooms, water fountains, and more!"
+    - condition:
+        - type: slot
+          name: language
+          value: en
+      text: "Hey! 👋 Looking for something?"
+    - condition:
+        - type: slot
+          name: language
+          value: en
+      text: "Hi! 🎯 How can I assist you today?"
+    - condition:
+        - type: slot
+          name: language
+          value: en
+      text: "Hello! 🌟 Welcome! What can I do for you?"
+    # 中文回應 - 簡短多樣且幽默
+    - text: "你好！👋 我是校園 AI 助手，需要什麼幫助？"
+    - text: "嗨！😊 需要找設施嗎？我來幫你！"
+    - text: "哈囉！👋 有什麼需要？我隨時待命！"
+    - text: "你好！🗺️ 準備探索校園了嗎？讓我當你的導遊！"
+    - text: "嗨！😄 我可以幫你找廁所、飲水機等設施！別客氣！"
+    - text: "你好！👋 在找什麼嗎？我來幫你找！"
+    - text: "哈囉！🤖 我是你的校園小助手，有什麼需要儘管說！"
+    - text: "你好！🌟 歡迎使用校園助手！讓我來幫你解決問題！"
+    - text: "嗨！😊 我是你的貼心小助手，隨時為你服務！"
+    - text: "你好！🎯 需要找設施？我來幫你！保證又快又準！"
+    - text: "哈囉！🎯 今天需要什麼協助？"
+    - text: "你好！🌟 歡迎！有什麼可以幫你的？"
+    - text: "嗨！😊 需要找最近的設施？"
+    - text: "你好！👋 我可以幫你導航和查詢設施！"
+    - text: "哈囉！🗺️ 想找什麼？"
+    - text: "你好！😄 需要什麼協助？"
+  
+  utter_goodbye:
+    # 英文回應
+    - condition:
+        - type: slot
+          name: language
+          value: en
+      text: "Goodbye! Feel free to ask me if you have any more questions 😊"
+    - condition:
+        - type: slot
+          name: language
+          value: en
+      text: "Bye! Have a great day on campus! I'm here whenever you need me 🌟"
+    - condition:
+        - type: slot
+          name: language
+          value: en
+      text: "See you! Take care!"
+    - condition:
+        - type: slot
+          name: language
+          value: en
+      text: "Bye! Come back anytime you miss me! I'll miss you too 😄"
+    - condition:
+        - type: slot
+          name: language
+          value: en
+      text: "Thank you for using the National Formosa University Campus Assistant System. For further assistance, please feel free to contact us."
+    - condition:
+        - type: slot
+          name: language
+          value: en
+      text: "Farewell! Hope every day on campus is amazing for you! I'm here whenever you need me 🌈"
+    - condition:
+        - type: slot
+          name: language
+          value: en
+      text: "Bye! Glad I could help, looking forward to seeing you again! ✨"
+    - condition:
+        - type: slot
+          name: language
+          value: en
+      text: "See you later!"
+    - condition:
+        - type: slot
+          name: language
+          value: en
+      text: "Goodbye! Remember, I'm always here whenever you need help 👋 This is a free public service for everyone!"
+    # 中文回應（默認）
+    - text: "再見！如果還有問題隨時可以問我 😊 這是免費的公共服務，無需帳號！"
+    - text: "拜拜！祝您校園生活愉快！有需要隨時找我 🌟 這是所有人都能使用的免費服務！"
+    - text: "再見！祝順利！"
+    - text: "拜拜～記得想我的時候隨時回來找我聊天！我會想你的 😄"
+    - text: "感謝使用虎尾科技大學校園助手系統。如需進一步協助，請隨時聯繫。"
+    - text: "再見了！希望你在校園的每一天都充滿精彩！有需要隨時找我 🌈"
+    - text: "拜拜！很高興能幫到你，期待下次再見面！✨"
+    - text: "再見！"
+    - text: "再見了！記住，不管什麼時候需要幫助，我都在這裡等你 👋"
+  
+  utter_ask_facility_type:
+    # 英文回應
+    - condition:
+        - type: slot
+          name: language
+          value: en
+      text: "Available facilities:\n🚻 Restroom\n🚰 Water Fountain\n🗑️ Trash Can\nWhich one do you need?"
+    - condition:
+        - type: slot
+          name: language
+          value: en
+      text: "Hey, what do you need? Restroom, water fountain, or trash can? Just tell me!"
+    - condition:
+        - type: slot
+          name: language
+          value: en
+      text: "Let me help you find a facility! Tell me if you need:\n• Restroom (say \"restroom\")\n• Water fountain (say \"water fountain\")\n• Trash can (say \"trash can\")"
+    - condition:
+        - type: slot
+          name: language
+          value: en
+      text: "What do you need? Restroom/Water/Trash?"
+    - condition:
+        - type: slot
+          name: language
+          value: en
+      text: "No problem! Tell me if you need a restroom, water fountain, or trash can, and I'll locate it for you right away!"
+    # 中文回應（默認）
+    - text: "您想找哪種設施呢？廁所、飲水機，還是垃圾桶？"
+    - text: "請問您需要找什麼設施？我可以幫您找廁所、飲水機或垃圾桶。"
+    - text: "我們有這幾種設施可以找：\n🚻 廁所\n🚰 飲水機\n🗑️ 垃圾桶\n你想找哪一個？"
+    - text: "嘿，想找什麼？廁所、飲水機還是垃圾桶？直接告訴我就行～"
+    - text: "讓我幫你找設施！請告訴我你需要：\n• 廁所（輸入「廁所」）\n• 飲水機（輸入「飲水機」）\n• 垃圾桶（輸入「垃圾桶」）"
+    - text: "找什麼？廁所/飲水機/垃圾桶？"
+    - text: "沒問題！告訴我你想找廁所、飲水機還是垃圾桶，我馬上幫你定位！"
+  
+  utter_default:
+    # 英文回應
+    - condition:
+        - type: slot
+          name: language
+          value: en
+      text: "I understand your question, but I might need more information. You can ask me:\n• \"Where is the nearest restroom?\"\n• \"What facilities are in Campus 1?\"\n• \"Where is the nearest water fountain?\"\n• \"What can you do?\""
+    - condition:
+        - type: slot
+          name: language
+          value: en
+      text: "Sorry, I'm not quite sure what you mean. You can try asking me:\n• \"Where is the nearest restroom?\"\n• \"What facilities are in Campus 1?\"\n• \"Where is the nearest water fountain?\"\n• \"What can you do?\""
+    # 中文回應（默認）
+    - text: "我理解您的問題，但可能需要更多資訊。您可以問我：\n• 「最近的廁所在哪？」\n• 「第一校區有哪些設施？」\n• 「最近的飲水機在哪？」\n• 「你有什麼功能？」"
+    - text: "抱歉，我不太確定您的意思。您可以試試問我：\n• 「最近的廁所在哪？」\n• 「第一校區有哪些設施？」\n• 「最近的飲水機在哪？」\n• 「你有什麼功能？」"
+
+actions:
+  - action_find_nearest_toilet
+  - action_find_nearest_water
+  - action_find_nearest_trash
+  - action_show_route
+  - action_query_campus_stats
+  - action_get_current_time
+  - action_report_facility_issue
+  - action_report_facility_problem
+  - action_update_facility_status
+  - action_update_floor_status
+  - action_query_floor_status
+  - action_query_building_facilities
+  - action_get_smart_route
+  - action_query_facility_history
+  - action_get_statistics
+  - action_set_preference
+  - action_get_preferences
+  - action_quick_report
+  - action_query_issue_history
+  - action_provide_suggestions
+  - action_remember_context
+  - action_ask_campus_events
+  - action_ask_building_info
+  - action_ask_emergency_contact
+  - action_ask_parking_info
+  - action_ask_dining_info
+  - action_ask_library_hours
+  - action_ask_weather
+  - action_ask_campus_tips
+  - action_get_user_location
+  - action_find_nearest_functional_facility
+  - action_query_facility_gps
+  - action_query_facility_status
+  - action_query_facilities_by_status
+  - action_navigate_to_functional_facility
+  - action_get_facility_gps_points
+  - action_query_nearby_facilities_status
+  - action_compare_facilities
+  - action_get_facilities_by_status
+  - action_get_facilities_sorted_by_distance
+  - action_get_facility_statistics
+  - action_batch_query_facilities
+  - action_show_progress
+  - action_smart_error_recovery
+  - action_recommend_facility
+  - action_smart_suggestions
+  - action_format_rich_response
+  - action_set_language
+  - action_greet
+  - action_goodbye
+  - action_tell_joke
+  - action_calculator
+  - action_translate
+  - action_motivational_quote
+  - action_random_fact
+  - action_compliment
+  - action_set_reminder

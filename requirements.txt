@@ -1,3 +1,9 @@
+# Build dependencies
+setuptools>=41.0.0
+wheel
+cython
+
+# Main dependencies
 rasa==3.6.0
 rasa-sdk==3.6.0
 jieba>=0.42.1

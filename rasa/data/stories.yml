@@ -1,0 +1,147 @@
+version: "3.1"
+
+stories:
+  # 新增校園資訊相關故事
+  - story: 查詢校園活動
+    steps:
+      - intent: ask_campus_events
+      - action: action_set_language
+      - action: action_ask_campus_events
+
+
+  - story: 查詢緊急聯絡
+    steps:
+      - intent: ask_emergency_contact
+      - action: action_set_language
+      - action: action_ask_emergency_contact
+
+  - story: 查詢停車資訊
+    steps:
+      - intent: ask_parking_info
+      - action: action_set_language
+      - action: action_ask_parking_info
+
+  - story: 查詢餐廳資訊
+    steps:
+      - intent: ask_dining_info
+      - action: action_set_language
+      - action: action_ask_dining_info
+
+  - story: 查詢圖書館開放時間
+    steps:
+      - intent: ask_library_hours
+      - action: action_set_language
+      - action: action_ask_library_hours
+
+  - story: 查詢天氣
+    steps:
+      - intent: ask_weather
+      - action: action_set_language
+      - action: action_ask_weather
+
+  - story: 查詢校園小貼士
+    steps:
+      - intent: ask_campus_tips
+      - action: action_set_language
+      - action: action_ask_campus_tips
+
+  # 原有故事
+  - story: 打招呼
+    steps:
+      - intent: greet
+      - action: action_set_language
+      - action: action_greet
+
+  - story: 告別
+    steps:
+      - intent: goodbye
+      - action: action_set_language
+      - action: utter_goodbye
+
+  - story: 尋找最近的廁所
+    steps:
+      - intent: find_nearest_toilet
+      - action: action_find_nearest_toilet
+
+  - story: 尋找最近的飲水機
+    steps:
+      - intent: find_nearest_water
+      - action: action_find_nearest_water
+
+  - story: 尋找最近的垃圾桶
+    steps:
+      - intent: find_nearest_trash
+      - action: action_find_nearest_trash
+
+
+  - story: 詢問我是誰
+    steps:
+      - intent: ask_who_are_you
+      - action: action_set_language
+      - action: utter_who_are_you
+
+  - story: 詢問功能
+    steps:
+      - intent: ask_capabilities
+      - action: action_set_language
+      - action: utter_capabilities
+
+  - story: 詢問時間
+    steps:
+      - intent: ask_time
+      - action: action_get_current_time
+
+  - story: 回報設備問題
+    steps:
+      - intent: report_facility_issue
+      - action: action_set_language
+      - action: action_report_facility_issue
+
+  - story: 更新設施狀態
+    steps:
+      - intent: update_facility_status
+      - action: action_update_facility_status
+
+  - story: 超出範圍
+    steps:
+      - intent: out_of_scope
+      - action: action_set_language
+      - action: utter_default
+
+  - story: 連續查詢設施
+    steps:
+      - intent: find_nearest_toilet
+      - action: action_find_nearest_toilet
+      - action: action_show_route
+      - intent: find_nearest_water
+      - action: action_find_nearest_water
+      - action: action_show_route
+
+  - story: 查詢後問時間
+    steps:
+      - intent: query_campus_info
+        entities:
+          - campus
+      - action: action_set_language
+      - action: action_query_campus_stats
+      - action: utter_campus_info
+      - intent: ask_time
+      - action: action_get_current_time
+
+  - story: 打招呼後詢問功能
+    steps:
+      - intent: greet
+      - action: action_set_language
+      - action: action_greet
+      - intent: ask_capabilities
+      - action: action_set_language
+      - action: utter_capabilities
+
+  - story: 詢問功能後查詢設施
+    steps:
+      - intent: ask_capabilities
+      - action: action_set_language
+      - action: utter_capabilities
+      - intent: find_nearest_toilet
+      - action: action_find_nearest_toilet
+      - action: action_show_route

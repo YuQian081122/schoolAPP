@@ -8,3 +8,5 @@ rasa-sdk==3.6.0
 jieba>=0.42.1
 # Use PyYAML 5.3.1 which has pre-built wheels (avoids 5.4.x build issues)
 pyyaml==5.3.1
+# Pin SQLAlchemy to 1.x for Rasa 3.6.0 compatibility
+sqlalchemy<2.0,>=1.4.0

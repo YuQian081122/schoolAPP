@@ -24,10 +24,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 複製 Rasa 項目文件
 COPY rasa/ /app/rasa/
 
-# 複製入口文件（如果需要）
-COPY main.py /app/main.py
-RUN chmod +x /app/main.py
-
 # 設置工作目錄為 rasa
 WORKDIR /app/rasa
 

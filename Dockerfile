@@ -46,5 +46,6 @@ ENV PYTHONUNBUFFERED=1
 ENV PORT=8080
 EXPOSE 8080
 
-# 使用 start.sh 啟動（使用絕對路徑）
-CMD ["/bin/bash", "/app/rasa/start.sh"]
+# 明確設置 ENTRYPOINT 和 CMD，確保 Zeabur 不會自動檢測執行其他文件
+ENTRYPOINT ["/bin/bash"]
+CMD ["/app/rasa/start.sh"]

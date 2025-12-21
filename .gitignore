@@ -11,9 +11,15 @@ ENV/
 
 # Rasa
 rasa/.rasa/
+rasa/.rasa/cache/
 rasa/logs/*.log
 rasa/conversation_logs/
 *.tar.gz
+rasa/models/*.tar.gz
+# 允許模型文件被追蹤（Railway 部署需要）
+# 注意：由於文件太大，模型文件將通過 Volume 或外部存儲提供
+# *.tar.gz
+# !rasa/models/*.tar.gz  # 暫時註釋，因為文件太大無法上傳
 
 # Node
 node_modules/
@@ -45,3 +51,6 @@ build/
 
 # Vercel
 .vercel/
+
+# Zeabur - 避免自動檢測執行
+main.py

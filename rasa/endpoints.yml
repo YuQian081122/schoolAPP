@@ -1,5 +1,11 @@
-action_endpoint:
-  url: "http://localhost:5055/webhook"
+# Action Endpoint 配置
+# 在容器部署中，如果沒有單獨的 action server，Rasa 會嘗試本地執行 actions
+# 如果需要在單獨的容器中運行 action server，取消下面的註釋並設置正確的 URL
+# action_endpoint:
+#   url: "http://localhost:5055/webhook"
+
+# 注意：如果使用內聯 actions（不設置 action_endpoint），
+# Rasa 會嘗試從 Python 路徑中載入 actions（需要 actions 目錄在 PYTHONPATH 中）
 
 # Tracker Store 配置 - 用於持久化對話記錄
 tracker_store:

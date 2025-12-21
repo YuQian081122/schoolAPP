@@ -51,6 +51,3 @@ build/
 
 # Vercel
 .vercel/
-
-# Zeabur - 避免自動檢測執行
-main.py

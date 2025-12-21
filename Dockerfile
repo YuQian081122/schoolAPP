@@ -24,11 +24,18 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 複製 Rasa 項目文件
 COPY rasa/ /app/rasa/
 
+# 複製入口文件（如果需要）
+COPY main.py /app/main.py
+RUN chmod +x /app/main.py
+
 # 設置工作目錄為 rasa
 WORKDIR /app/rasa
 
 # 創建模型目錄
 RUN mkdir -p models/
+
+# 確保 start.sh 有執行權限
+RUN chmod +x /app/rasa/start.sh
 
 # 設置環境變數（優化記憶體）
 ENV TF_FORCE_GPU_ALLOW_GROWTH=true
@@ -43,5 +50,5 @@ ENV PYTHONUNBUFFERED=1
 ENV PORT=8080
 EXPOSE 8080
 
-# 使用 start.sh 啟動
-CMD ["bash", "start.sh"]
+# 使用 start.sh 啟動（使用絕對路徑）
+CMD ["/bin/bash", "/app/rasa/start.sh"]

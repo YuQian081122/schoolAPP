@@ -182,14 +182,14 @@ echo "📡 CORS 已啟用: *"
 echo "🌐 API 端點: http://0.0.0.0:$PORT"
 echo "=========================================="
 
-# 啟動服務（使用正確的參數格式）
-# 注意：Rasa 3.x 使用 -i 或 --interface 指定主機，而不是 --host
-# Rasa 3.6 不支持 --actions 參數
+# 啟動服務（使用標準的 Rasa 啟動命令格式）
+# Rasa 默認會監聽所有接口（0.0.0.0），無需指定 -i 參數
+# Rasa 3.6 不支持 --actions 參數，使用內聯動作配置
 # 如果要使用內聯動作，確保：
 # 1. actions 目錄在 PYTHONPATH 中（已在上面設置）
 # 2. endpoints.yml 中不設置 action_endpoint（已正確配置）
-# 3. 直接使用 rasa run 命令即可
-rasa run --enable-api --cors "*" --port "$PORT" -i "0.0.0.0" || {
+# 3. 直接使用標準的 rasa run 命令即可
+rasa run --port "$PORT" --enable-api --cors "*" || {
   echo "❌ 服務啟動失敗"
   echo "請檢查日誌以獲取更多信息"
   exit 1

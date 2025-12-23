@@ -6,6 +6,7 @@
 
 # 注意：如果使用內聯 actions（不設置 action_endpoint），
 # Rasa 會嘗試從 Python 路徑中載入 actions（需要 actions 目錄在 PYTHONPATH 中）
+# 確保 start.sh 中已設置 PYTHONPATH 包含 actions 目錄
 
 # Tracker Store 配置 - 用於持久化對話記錄
 tracker_store:

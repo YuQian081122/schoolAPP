@@ -107,35 +107,76 @@ fi
 
 # 如果還是沒有模型文件，嘗試訓練
 if [ -z "$MODEL_FILE" ] && ! ls models/*.tar.gz 1> /dev/null 2>&1; then
-  echo "📚 未找到模型文件，開始訓練模型..."
-  echo "⏳ 這可能需要幾分鐘時間..."
+  echo "⚠️  未找到模型文件，嘗試訓練..."
+  echo "💡 注意：訓練可能需要較長時間且可能因記憶體不足而失敗"
   
-  # 訓練模型
-  rasa train --domain domain.yml --data data/ --config config.yml --out models/ || {
-    echo "❌ 模型訓練失敗"
-    echo "⚠️  將嘗試使用默認配置啟動服務（可能無法正常工作）"
-  }
+  # 嘗試訓練，但如果失敗則繼續執行
+  TRAIN_SUCCESS=false
   
-  # 檢查訓練結果
-  if ls models/*.tar.gz 1> /dev/null 2>&1; then
-    MODEL_FILE=$(ls -t models/*.tar.gz | head -n 1)
-    echo "✅ 模型訓練完成: $MODEL_FILE"
+  # 第一次嘗試：使用完整配置
+  if rasa train --quiet --data data --config config.yml --domain domain.yml 2>&1; then
+    TRAIN_SUCCESS=true
+    echo "✅ 訓練成功完成！"
   else
-    echo "⚠️  模型訓練完成但未找到模型文件"
+    echo "⚠️  完整配置訓練失敗，嘗試使用更簡單的配置..."
+    # 第二次嘗試：使用最小配置
+    if rasa train --quiet --data data 2>&1; then
+      TRAIN_SUCCESS=true
+      echo "✅ 簡單配置訓練成功完成！"
+    else
+      echo "❌ 訓練失敗（可能是記憶體不足）"
+      echo "⚠️  將嘗試啟動服務（如果沒有模型，服務可能會有限制）"
+      TRAIN_SUCCESS=false
+    fi
+  fi
+  
+  # 檢查訓練後是否有模型文件
+  if [ "$TRAIN_SUCCESS" = true ] || ls models/*.tar.gz 1> /dev/null 2>&1; then
+    MODEL_FILE=$(ls -t models/*.tar.gz | head -n 1)
+    echo "✅ 訓練後找到模型: $MODEL_FILE"
+  else
+    echo "⚠️  警告：沒有找到模型文件，服務可能無法正常工作"
+    echo "💡 建議：確保 SUPABASE_MODEL_URL 環境變數正確設置"
   fi
 fi
 
-# 顯示最終模型信息
+# 最終檢查模型文件
+echo "=========================================="
 if [ -n "$MODEL_FILE" ] && [ -f "$MODEL_FILE" ]; then
+  echo "✅ 模型文件已準備: $MODEL_FILE"
   FILE_SIZE=$(du -h "$MODEL_FILE" | cut -f1)
-  echo "=========================================="
-  echo "📦 使用的模型文件: $MODEL_FILE"
-  echo "📏 文件大小: $FILE_SIZE"
-  echo "=========================================="
+  echo "   大小: $FILE_SIZE"
+elif ls models/*.tar.gz 1> /dev/null 2>&1; then
+  MODEL_FILE=$(ls -t models/*.tar.gz | head -n 1)
+  echo "✅ 找到模型文件: $MODEL_FILE"
 else
   echo "⚠️  警告：未找到模型文件，服務可能無法正常工作"
+  echo "   將嘗試啟動服務，但可能會有功能限制"
 fi
+echo "=========================================="
 
+# 優化記憶體使用 - 設置 TensorFlow 環境變數
+export TF_FORCE_GPU_ALLOW_GROWTH=true
+export TF_GPU_ALLOCATOR=cuda_malloc_async
+export TF_CPP_MIN_LOG_LEVEL=2  # 減少 TensorFlow 日誌輸出
+export OMP_NUM_THREADS=1  # 限制 OpenMP 線程
+export MKL_NUM_THREADS=1  # 限制 MKL 線程
+export NUMBA_NUM_THREADS=1  # 限制 Numba 線程
+
+# Python 記憶體優化
+export PYTHONHASHSEED=0
+export PYTHONUNBUFFERED=1
+
+# 限制 TensorFlow 記憶體使用（使用增量的記憶體分配）
+export TF_FORCE_UNIFIED_MEMORY=0
+
+echo "🔧 記憶體優化設置已應用"
+echo "   - TensorFlow GPU 增長模式"
+echo "   - 限制線程數量"
+echo "   - 減少日誌輸出"
+echo "=========================================="
+
+# 啟動 Rasa 服務（即使訓練失敗也嘗試啟動）
 echo "🚀 啟動 Rasa 服務器在端口 $PORT..."
 echo "📡 CORS 已啟用: *"
 echo "🌐 API 端點: http://0.0.0.0:$PORT"
@@ -143,8 +184,12 @@ echo "=========================================="
 
 # 啟動服務（使用正確的參數格式）
 # 注意：Rasa 3.x 使用 -i 或 --interface 指定主機，而不是 --host
-# 使用 --actions 參數啟用內聯動作支持（不需要單獨的 action server）
-rasa run --enable-api --cors "*" --port "$PORT" -i "0.0.0.0" --actions actions || {
+# Rasa 3.6 不支持 --actions 參數
+# 如果要使用內聯動作，確保：
+# 1. actions 目錄在 PYTHONPATH 中（已在上面設置）
+# 2. endpoints.yml 中不設置 action_endpoint（已正確配置）
+# 3. 直接使用 rasa run 命令即可
+rasa run --enable-api --cors "*" --port "$PORT" -i "0.0.0.0" || {
   echo "❌ 服務啟動失敗"
   echo "請檢查日誌以獲取更多信息"
   exit 1

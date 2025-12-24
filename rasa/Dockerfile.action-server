@@ -15,10 +15,8 @@ RUN apt-get update && apt-get install -y \
 # 升級 pip、setuptools 和 wheel
 RUN pip install --upgrade pip setuptools wheel
 
-# 複製 requirements.txt
-COPY rasa/requirements.txt /app/requirements.txt
-
 # 安裝 Python 依賴（只需要 rasa-sdk，不需要完整的 rasa）
+# Action Server 不需要完整的 Rasa 框架，只需要 rasa-sdk
 RUN pip install --no-cache-dir rasa-sdk==3.5.1
 
 # 複製 Rasa actions 目錄
@@ -42,3 +40,4 @@ EXPOSE 5055
 # 設置啟動命令
 ENTRYPOINT ["/bin/bash"]
 CMD ["/app/start_action_server.sh"]
+

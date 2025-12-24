@@ -18,7 +18,8 @@ RUN pip install --upgrade pip setuptools wheel
 # 安裝 Python 依賴
 # Action Server 需要 rasa-sdk 和 sanic（用於 HTTP 服務器）
 # 同時安裝 sanic-cors 用於 CORS 支持
-RUN pip install --no-cache-dir rasa-sdk==3.5.1 sanic sanic-cors
+# 使用與 Rasa 3.6.21 兼容的 rasa-sdk 版本
+RUN pip install --no-cache-dir rasa-sdk==3.6.21 sanic sanic-cors
 
 # 複製 Rasa actions 目錄
 COPY rasa/actions/ /app/actions/
@@ -42,3 +43,4 @@ EXPOSE 5055
 # 設置啟動命令（優先使用 Python 版本，更可靠）
 ENTRYPOINT ["python3"]
 CMD ["/app/start_action_server.py"]
+

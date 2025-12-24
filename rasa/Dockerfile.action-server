@@ -15,19 +15,21 @@ RUN apt-get update && apt-get install -y \
 # 升級 pip、setuptools 和 wheel
 RUN pip install --upgrade pip setuptools wheel
 
-# 安裝 Python 依賴（只需要 rasa-sdk，不需要完整的 rasa）
-# Action Server 不需要完整的 Rasa 框架，只需要 rasa-sdk
-RUN pip install --no-cache-dir rasa-sdk==3.5.1
+# 安裝 Python 依賴
+# Action Server 需要 rasa-sdk 和 sanic（用於 HTTP 服務器）
+# 同時安裝 sanic-cors 用於 CORS 支持
+RUN pip install --no-cache-dir rasa-sdk==3.5.1 sanic sanic-cors
 
 # 複製 Rasa actions 目錄
 COPY rasa/actions/ /app/actions/
 COPY rasa/start_action_server.sh /app/start_action_server.sh
+COPY rasa/start_action_server.py /app/start_action_server.py
 
 # 設置工作目錄
 WORKDIR /app
 
 # 確保啟動腳本有執行權限
-RUN chmod +x /app/start_action_server.sh
+RUN chmod +x /app/start_action_server.sh /app/start_action_server.py
 
 # 設置環境變數
 ENV PYTHONUNBUFFERED=1
@@ -37,7 +39,6 @@ ENV PYTHONHASHSEED=0
 ENV PORT=5055
 EXPOSE 5055
 
-# 設置啟動命令
-ENTRYPOINT ["/bin/bash"]
-CMD ["/app/start_action_server.sh"]
-
+# 設置啟動命令（優先使用 Python 版本，更可靠）
+ENTRYPOINT ["python3"]
+CMD ["/app/start_action_server.py"]

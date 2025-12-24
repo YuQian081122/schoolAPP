@@ -1,12 +1,20 @@
 # Action Endpoint 配置
 # 在容器部署中，如果沒有單獨的 action server，Rasa 會嘗試本地執行 actions
 # 如果需要在單獨的容器中運行 action server，取消下面的註釋並設置正確的 URL
+
+# 使用環境變數配置 Action Server URL（推薦）
+# 在 Zeabur 中設置環境變數 ACTION_SERVER_URL=https://rasa-action-server-xxx.zeabur.app
+action_endpoint:
+  url: "${ACTION_SERVER_URL}/webhook"
+
+# 如果沒有設置 ACTION_SERVER_URL，使用本地地址（開發環境）
 # action_endpoint:
 #   url: "http://localhost:5055/webhook"
 
 # 注意：如果使用內聯 actions（不設置 action_endpoint），
 # Rasa 會嘗試從 Python 路徑中載入 actions（需要 actions 目錄在 PYTHONPATH 中）
 # 確保 start.sh 中已設置 PYTHONPATH 包含 actions 目錄
+# 但根據日誌分析，Rasa 3.5 使用 rasa-sdk 時建議使用獨立的 action server
 
 # Tracker Store 配置 - 用於持久化對話記錄
 tracker_store:

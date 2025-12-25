@@ -383,4 +383,3 @@ if use_fallback:
     except Exception as e2:
         print(f"❌ 備用方法也失敗: {e2}")
         sys.exit(1)
-

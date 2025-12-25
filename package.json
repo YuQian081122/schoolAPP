@@ -1,0 +1,22 @@
+{
+  "name": "school-app",
+  "version": "1.0.0",
+  "description": "國立虎尾科技大學 - 校園 AI 助手",
+  "private": true,
+  "scripts": {
+    "dev": "python -m http.server 8000",
+    "start": "python -m http.server 8000"
+  },
+  "keywords": [
+    "school",
+    "campus",
+    "ai",
+    "rasa",
+    "map"
+  ],
+  "author": "YuQian081122",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

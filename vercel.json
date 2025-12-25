@@ -1,7 +1,15 @@
 {
   "version": 2,
-  "buildCommand": "echo 'No build required'",
+  "buildCommand": "echo 'Build completed'",
   "outputDirectory": ".",
+  "ignore": [
+    "requirements.txt",
+    "runtime.txt",
+    "*.py",
+    "rasa/**",
+    "line_bot/**",
+    "__pycache__/**"
+  ],
   "headers": [
     {
       "source": "/(.*)",

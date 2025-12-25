@@ -1,19 +1,5 @@
 {
   "version": 2,
-  "rewrites": [
-    {
-      "source": "/rasa/status",
-      "destination": "/api/rasa/status"
-    },
-    {
-      "source": "/rasa/webhooks/rest/webhook",
-      "destination": "/api/rasa/webhook"
-    },
-    {
-      "source": "/api/gemini/chat",
-      "destination": "/api/gemini/chat"
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",

@@ -3,11 +3,8 @@
   "version": "1.0.0",
   "description": "國立虎尾科技大學 - 校園 AI 助手",
   "private": true,
-  "type": "module",
   "scripts": {
-    "dev": "vercel dev",
-    "build": "echo 'Build completed'",
-    "start": "node server.js"
+    "build": "echo 'No build step required for static site'"
   },
   "keywords": [
     "school",
@@ -17,11 +14,5 @@
     "map"
   ],
   "author": "YuQian081122",
-  "license": "MIT",
-  "dependencies": {
-    "node-fetch": "^3.3.0"
-  },
-  "engines": {
-    "node": "18.x"
-  }
+  "license": "MIT"
 }

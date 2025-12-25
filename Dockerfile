@@ -50,6 +50,6 @@ ENV PYTHONUNBUFFERED=1
 ENV PORT=8080
 EXPOSE 8080
 
-# 明確設置 ENTRYPOINT 和 CMD，確保 Zeabur 不會自動檢測執行其他文件
+# 設置啟動命令（Zeabur 可能自動檢測 main.py，或使用此 CMD）
 ENTRYPOINT ["/bin/bash"]
 CMD ["/app/rasa/start.sh"]

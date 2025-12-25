@@ -14,6 +14,42 @@ export PYTHONPATH="${PYTHONPATH}:$SCRIPT_DIR"
 # 設置默認端口（Zeabur 會自動設置 PORT 環境變數）
 export PORT=${PORT:-5005}
 
+# ====== Action Server (cloud) wiring ======
+# 本專案在 Zeabur 會將 Rasa 與 Action Server 分開部署。
+# Rasa 的 action_endpoint 需要指向 Action Server 的 /webhook。
+#
+# 注意：Rasa 3.5.x 的 endpoints.yml 內插在某些環境可能不生效（會把 ${...} 當成字串），
+# 因此這裡在啟動時直接把 endpoints.yml 生成成「確定的 URL」以避免雲端連線失敗。
+#
+# Zeabur 會自動注入互相連線用的 host（例如 RASA_ACTION_SERVER_HOST），
+# 若你也有手動設 ACTION_SERVER_URL，會優先使用手動設定。
+ACTION_SERVER_BASE_URL=""
+if [ -n "${ACTION_SERVER_URL:-}" ]; then
+  ACTION_SERVER_BASE_URL="$ACTION_SERVER_URL"
+elif [ -n "${RASA_ACTION_SERVER_HOST:-}" ]; then
+  ACTION_SERVER_BASE_URL="$RASA_ACTION_SERVER_HOST"
+fi
+
+if [ -n "$ACTION_SERVER_BASE_URL" ]; then
+  # 若只有 host（沒有 http/https），補上 https://
+  case "$ACTION_SERVER_BASE_URL" in
+    http://*|https://*) ;;
+    *) ACTION_SERVER_BASE_URL="https://$ACTION_SERVER_BASE_URL" ;;
+  esac
+
+  # 移除尾端 /
+  ACTION_SERVER_BASE_URL="${ACTION_SERVER_BASE_URL%/}"
+
+  echo "🔗 雲端模式：設定 action server -> ${ACTION_SERVER_BASE_URL}/webhook"
+  cat > endpoints.yml <<EOF
+action_endpoint:
+  url: "${ACTION_SERVER_BASE_URL}/webhook"
+
+tracker_store:
+  type: InMemoryTrackerStore
+EOF
+fi
+
 # 調試信息：環境變數和目錄
 echo "=========================================="
 echo "🚀 Rasa 服務啟動腳本"
@@ -98,85 +134,44 @@ if [ -z "$MODEL_FILE" ]; then
   echo "📂 檢查本地模型目錄..."
   mkdir -p models/
   if ls models/*.tar.gz 1> /dev/null 2>&1; then
-    MODEL_FILE=$(ls -t models/*.tar.gz | head -n 1)
-    echo "✅ 找到現有模型: $MODEL_FILE"
+    MODEL_FILE=$(ls -t models/*.tar.gz | head -n1)
+    echo "✅ 找到本地模型文件: $MODEL_FILE"
   else
-    echo "⚠️  本地未找到模型文件"
+    echo "⚠️  本地模型目錄中沒有找到 .tar.gz 文件"
   fi
 fi
 
-# 如果還是沒有模型文件，嘗試訓練
-if [ -z "$MODEL_FILE" ] && ! ls models/*.tar.gz 1> /dev/null 2>&1; then
-  echo "⚠️  未找到模型文件，嘗試訓練..."
-  echo "💡 注意：訓練可能需要較長時間且可能因記憶體不足而失敗"
-  
-  # 嘗試訓練，但如果失敗則繼續執行
-  TRAIN_SUCCESS=false
-  
-  # 第一次嘗試：使用完整配置
-  if rasa train --quiet --data data --config config.yml --domain domain.yml 2>&1; then
-    TRAIN_SUCCESS=true
-    echo "✅ 訓練成功完成！"
-  else
-    echo "⚠️  完整配置訓練失敗，嘗試使用更簡單的配置..."
-    # 第二次嘗試：使用最小配置
-    if rasa train --quiet --data data 2>&1; then
-      TRAIN_SUCCESS=true
-      echo "✅ 簡單配置訓練成功完成！"
-    else
-      echo "❌ 訓練失敗（可能是記憶體不足）"
-      echo "⚠️  將嘗試啟動服務（如果沒有模型，服務可能會有限制）"
-      TRAIN_SUCCESS=false
+# 如果沒有找到模型，嘗試訓練
+if [ -z "$MODEL_FILE" ]; then
+  echo "⚠️  沒有找到任何模型文件，嘗試訓練模型..."
+  # 檢查訓練數據是否存在
+  if [ -f "data/nlu.yml" ] && [ -f "data/rules.yml" ] && [ -f "domain.yml" ] && [ -f "config.yml" ]; then
+    echo "📚 訓練數據存在，開始訓練模型..."
+    rasa train || {
+      echo "⚠️  訓練失敗，嘗試繼續啟動服務（可能沒有模型）"
+    }
+    # 訓練完成後，選擇最新模型
+    if ls models/*.tar.gz 1> /dev/null 2>&1; then
+      MODEL_FILE=$(ls -t models/*.tar.gz | head -n1)
+      echo "✅ 訓練完成，最新模型: $MODEL_FILE"
     fi
-  fi
-  
-  # 檢查訓練後是否有模型文件
-  if [ "$TRAIN_SUCCESS" = true ] || ls models/*.tar.gz 1> /dev/null 2>&1; then
-    MODEL_FILE=$(ls -t models/*.tar.gz | head -n 1)
-    echo "✅ 訓練後找到模型: $MODEL_FILE"
   else
-    echo "⚠️  警告：沒有找到模型文件，服務可能無法正常工作"
-    echo "💡 建議：確保 SUPABASE_MODEL_URL 環境變數正確設置"
+    echo "❌ 訓練數據不完整，無法訓練模型"
+    echo "請確保 data/nlu.yml, data/rules.yml, domain.yml, config.yml 存在"
   fi
 fi
 
-# 最終檢查模型文件
-echo "=========================================="
-if [ -n "$MODEL_FILE" ] && [ -f "$MODEL_FILE" ]; then
-  echo "✅ 模型文件已準備: $MODEL_FILE"
-  FILE_SIZE=$(du -h "$MODEL_FILE" | cut -f1)
-  echo "   大小: $FILE_SIZE"
-elif ls models/*.tar.gz 1> /dev/null 2>&1; then
-  MODEL_FILE=$(ls -t models/*.tar.gz | head -n 1)
-  echo "✅ 找到模型文件: $MODEL_FILE"
-else
-  echo "⚠️  警告：未找到模型文件，服務可能無法正常工作"
-  echo "   將嘗試啟動服務，但可能會有功能限制"
-fi
-echo "=========================================="
-
-# 優化記憶體使用 - 設置 TensorFlow 環境變數
+# 設置內存優化（避免 OOM）
 export TF_FORCE_GPU_ALLOW_GROWTH=true
-export TF_GPU_ALLOCATOR=cuda_malloc_async
-export TF_CPP_MIN_LOG_LEVEL=2  # 減少 TensorFlow 日誌輸出
-export OMP_NUM_THREADS=1  # 限制 OpenMP 線程
-export MKL_NUM_THREADS=1  # 限制 MKL 線程
-export NUMBA_NUM_THREADS=1  # 限制 Numba 線程
-
-# Python 記憶體優化
+export TF_CPP_MIN_LOG_LEVEL=2
+export OMP_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+export NUMBA_NUM_THREADS=1
 export PYTHONHASHSEED=0
 export PYTHONUNBUFFERED=1
 
-# 限制 TensorFlow 記憶體使用（使用增量的記憶體分配）
-export TF_FORCE_UNIFIED_MEMORY=0
-
-echo "🔧 記憶體優化設置已應用"
-echo "   - TensorFlow GPU 增長模式"
-echo "   - 限制線程數量"
-echo "   - 減少日誌輸出"
+# 啟動 Rasa 服務
 echo "=========================================="
-
-# 啟動 Rasa 服務（即使訓練失敗也嘗試啟動）
 echo "🚀 啟動 Rasa 服務器在端口 $PORT..."
 echo "📡 CORS 已啟用: *"
 echo "🌐 API 端點: http://0.0.0.0:$PORT"
@@ -184,7 +179,7 @@ echo "=========================================="
 
 # 啟動服務（使用標準的 Rasa 啟動命令格式）
 # Rasa 默認會監聽所有接口（0.0.0.0），無需指定 -i 參數
-# Rasa 3.6 不支持 --actions 參數，使用內聯動作配置
+# Rasa 3.5.17 使用標準的 rasa run 命令
 # 如果要使用內聯動作，確保：
 # 1. actions 目錄在 PYTHONPATH 中（已在上面設置）
 # 2. endpoints.yml 中不設置 action_endpoint（已正確配置）
@@ -194,4 +189,3 @@ rasa run --port "$PORT" --enable-api --cors "*" || {
   echo "請檢查日誌以獲取更多信息"
   exit 1
 }
-

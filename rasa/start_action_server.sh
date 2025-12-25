@@ -44,7 +44,7 @@ echo "📡 Actions 目錄: $WORKDIR/actions"
 echo "=========================================="
 
 # 使用 rasa-sdk 啟動 action server
-# rasa-sdk 3.5.1 提供了命令行工具
+# rasa-sdk 3.5.17 提供了命令行工具
 # 檢查是否有 rasa-sdk 命令
 if command -v rasa-sdk > /dev/null 2>&1; then
   echo "使用 rasa-sdk 命令啟動..."

@@ -4,7 +4,7 @@ wheel
 
 # Main dependencies
 rasa==3.5.17
-rasa-sdk==3.5.1
+rasa-sdk==3.5.17
 jieba>=0.42.1
 # PyYAML version will be determined by rasa (requires >=6.0)
 # Pin SQLAlchemy to 1.x for Rasa 3.5.x compatibility

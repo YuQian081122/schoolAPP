@@ -1,7 +1,7 @@
 {
   "version": 2,
   "buildCommand": "echo 'Build completed'",
-  "outputDirectory": ".",
+  "outputDirectory": "public",
   "ignore": [
     "requirements.txt",
     "runtime.txt",

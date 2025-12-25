@@ -6,6 +6,7 @@ WORKDIR /app
 
 # 安裝系統依賴
 RUN apt-get update && apt-get install -y \
+    bash \
     gcc \
     g++ \
     curl \

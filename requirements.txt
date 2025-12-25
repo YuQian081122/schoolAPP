@@ -3,19 +3,14 @@ setuptools>=41.0.0
 wheel
 
 # Main dependencies
-# Note: Some patch versions are not published on PyPI consistently across regions/builders.
-# Rasa Open Source 3.5.16 is broadly available; keep rasa-sdk aligned to the 3.5 line.
 rasa==3.5.16
 rasa-sdk==3.5.1
 jieba>=0.42.1
-# PyYAML version will be determined by rasa (requires >=6.0)
-# Pin SQLAlchemy to 1.x for Rasa 3.5.x compatibility
 sqlalchemy<2.0,>=1.4.0
 
 # Additional dependencies
-# Fix dependency conflicts
-pydantic<1.10.3
-# Google Generative AI for Gemini API integration
 google-generativeai>=0.3.0
-# Flask for web server (if needed)
 flask>=2.0.0
+
+# Pin pydantic version for compatibility with rasa
+pydantic<1.10.3

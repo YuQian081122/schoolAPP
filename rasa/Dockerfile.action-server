@@ -1,46 +1,23 @@
-# Rasa Action Server Dockerfile for Zeabur
 FROM python:3.10-slim
-
-# 設置工作目錄
 WORKDIR /app
-
-# 安裝系統依賴
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
     curl \
     wget \
     && rm -rf /var/lib/apt/lists/*
-
-# 升級 pip、setuptools 和 wheel
 RUN pip install --upgrade pip setuptools wheel
-
-# 安裝 Python 依賴
-# Action Server 需要 rasa-sdk 和 sanic（用於 HTTP 服務器）
-# 同時安裝 sanic-cors 用於 CORS 支持
-# 使用 rasa-sdk 3.5.16，與 Rasa 3.5.16 版本完全匹配
-RUN pip install --no-cache-dir rasa-sdk==3.5.16 sanic sanic-cors
-
-# 複製 Rasa actions 目錄
+# NOTE: Some patch versions may not be available on the builder's PyPI mirror.
+# Use a widely available 3.5.x release for compatibility with Rasa 3.5.x projects.
+RUN pip install --no-cache-dir rasa-sdk==3.5.1 sqlalchemy\<2.0,\>=1.4.0 sanic sanic-cors google-generativeai>=0.3.0
 COPY rasa/actions/ /app/actions/
 COPY rasa/start_action_server.sh /app/start_action_server.sh
 COPY rasa/start_action_server.py /app/start_action_server.py
-
-# 設置工作目錄
 WORKDIR /app
-
-# 確保啟動腳本有執行權限
 RUN chmod +x /app/start_action_server.sh /app/start_action_server.py
-
-# 設置環境變數
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONHASHSEED=0
-
-# 暴露端口（Zeabur 會自動設置 PORT 環境變數）
 ENV PORT=5055
 EXPOSE 5055
-
-# 設置啟動命令（優先使用 Python 版本，更可靠）
 ENTRYPOINT ["python3"]
 CMD ["/app/start_action_server.py"]
-

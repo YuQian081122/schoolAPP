@@ -1,6 +1,7 @@
 # Python 相關
 *.py
 requirements.txt
+requirements.txt.backup
 runtime.txt
 Pipfile
 Pipfile.lock

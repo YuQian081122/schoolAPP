@@ -2,14 +2,6 @@
   "version": 2,
   "buildCommand": "echo 'Build completed'",
   "outputDirectory": ".",
-  "ignore": [
-    "requirements.txt",
-    "runtime.txt",
-    "*.py",
-    "rasa/**",
-    "line_bot/**",
-    "__pycache__/**"
-  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -21,10 +13,6 @@
         {
           "key": "Access-Control-Allow-Methods",
           "value": "GET, POST, PUT, DELETE, OPTIONS"
-        },
-        {
-          "key": "Access-Control-Allow-Headers",
-          "value": "Content-Type, Authorization"
         }
       ]
     }

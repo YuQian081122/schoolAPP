@@ -1,6 +1,13 @@
 requirements.txt
 runtime.txt
 *.py
-rasa/**
-line_bot/**
-__pycache__/**
+rasa/
+line_bot/
+__pycache__/
+Dockerfile
+zbpack.json
+zeabur.json
+zeabur.action-server.json
+*.bat
+*.sh
+*.ps1

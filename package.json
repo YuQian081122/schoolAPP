@@ -5,9 +5,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vercel dev",
-    "build": "echo 'Build completed'",
-    "start": "node server.js"
+    "build": "echo 'No build step required for static site'"
   },
   "keywords": [
     "school",
@@ -18,9 +16,6 @@
   ],
   "author": "YuQian081122",
   "license": "MIT",
-  "dependencies": {
-    "node-fetch": "^3.3.0"
-  },
   "engines": {
     "node": "24.x"
   }

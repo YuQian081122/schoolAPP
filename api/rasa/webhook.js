@@ -16,12 +16,12 @@ export default async function handler(req, res) {
 
   try {
     // 從環境變量獲取 Rasa 服務器 URL
-    const rasaUrl = process.env.RASA_SERVER_URL || '';
+    const rasaUrl = process.env.RASA_API_URL || 'https://rasa-service.zeabur.app';
 
-    if (!rasaUrl) {
+    if (!rasaUrl || rasaUrl === '') {
       console.warn('[Rasa Webhook API] Rasa 服務器 URL 未配置');
       return res.status(200).json([{
-        text: '⚠️ Rasa 服務器未配置。請在 Vercel 環境變量中設置 RASA_SERVER_URL',
+        text: '⚠️ Rasa 服務器未配置。請在 Vercel 環境變量中設置 RASA_API_URL',
         recipient_id: 'default'
       }]);
     }

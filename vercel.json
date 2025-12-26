@@ -2,10 +2,6 @@
   "version": 2,
   "buildCommand": "npm run build",
   "outputDirectory": ".",
-  "env": {
-    "RASA_API_URL": "@rasa_api_url",
-    "ACTION_SERVER_URL": "@action_server_url"
-  },
   "headers": [
     {
       "source": "/(.*)",
@@ -17,6 +13,10 @@
         {
           "key": "Access-Control-Allow-Methods",
           "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
         }
       ]
     }

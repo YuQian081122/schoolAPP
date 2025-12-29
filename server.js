@@ -25,6 +25,91 @@ app.use((req, res, next) => {
   next();
 });
 
+// Rasa 狀態檢查端點（新增）
+app.get('/api/rasa/webhook/status', async (req, res) => {
+  try {
+    const rasaUrl = process.env.RASA_API_URL || 'https://rasa-service.zeabur.app';
+    
+    console.log('[Rasa Status] 檢查 Rasa 服務器狀態:', rasaUrl);
+    
+    // 嘗試連接到 Rasa 服務器的 /status 端點
+    const statusResponse = await fetch(`${rasaUrl}/status`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      timeout: 5000
+    });
+    
+    if (statusResponse.ok) {
+      const statusData = await statusResponse.json();
+      console.log('[Rasa Status] Rasa 服務器在線:', statusData);
+      return res.json({
+        status: 'ok',
+        rasa_status: statusData,
+        message: 'Rasa server is online'
+      });
+    } else {
+      console.warn('[Rasa Status] Rasa 服務器響應異常:', statusResponse.status);
+      return res.status(statusResponse.status).json({
+        status: 'error',
+        message: `Rasa server returned status ${statusResponse.status}`
+      });
+    }
+  } catch (error) {
+    console.error('[Rasa Status] 錯誤:', error.message);
+    return res.status(503).json({
+      status: 'error',
+      message: 'Unable to connect to Rasa server',
+      error: error.message
+    });
+  }
+});
+
+// Rasa Model Parse 端點（新增 - 用於意圖識別診斷）
+app.post('/api/rasa/webhook/model/parse', async (req, res) => {
+  try {
+    const rasaUrl = process.env.RASA_API_URL || 'https://rasa-service.zeabur.app';
+    const { text } = req.body;
+    
+    if (!text) {
+      return res.status(400).json({
+        error: 'Missing text parameter'
+      });
+    }
+    
+    console.log('[Rasa Parse] 解析文本:', text);
+    
+    const parseResponse = await fetch(`${rasaUrl}/model/parse`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ text }),
+      timeout: 5000
+    });
+    
+    if (parseResponse.ok) {
+      const parseData = await parseResponse.json();
+      console.log('[Rasa Parse] 解析結果:', parseData);
+      return res.json(parseData);
+    } else {
+      const errorText = await parseResponse.text();
+      console.error('[Rasa Parse] 錯誤響應:', parseResponse.status, errorText);
+      return res.status(parseResponse.status).json({
+        error: `Rasa parse error: ${parseResponse.status}`,
+        details: errorText
+      });
+    }
+  } catch (error) {
+    console.error('[Rasa Parse] 錯誤:', error.message);
+    return res.status(503).json({
+      error: 'Unable to parse with Rasa',
+      message: error.message
+    });
+  }
+});
+
 // Rasa Webhook 代理
 app.post('/api/rasa/webhook', async (req, res) => {
   try {

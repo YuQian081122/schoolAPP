@@ -1426,10 +1426,15 @@ function getRasaServerURL() {
     const localRasaUrl = 'http://localhost:5005';
     Utils.logger.log(`🌐 本地開發環境，使用本地 Rasa 伺服器：${localRasaUrl}`);
     return localRasaUrl;
-  } else {
-    // 生產環境：使用 Vercel 代理（直接返回代理端點，不需要再加路徑）
-    Utils.logger.log(`🌐 生產環境，使用 Vercel 代理：/api/rasa/webhook`);
+  } else if (hostname.includes('zeabur.app') || hostname.includes('vercel.app')) {
+    // Zeabur/Vercel 環境：使用前端服務器代理（相對路徑）
+    Utils.logger.log(`🌐 生產環境，使用前端服務器代理：/api/rasa/webhook`);
     return '/api/rasa/webhook';
+  } else {
+    // 其他生產環境：使用默認 Zeabur URL
+    const defaultRasaUrl = 'https://rasa-service.zeabur.app';
+    Utils.logger.log(`🌐 使用默認 Rasa 伺服器：${defaultRasaUrl}`);
+    return defaultRasaUrl;
   }
   
   // 檢查是否為內網穿透服務（localtunnel、ngrok 等）
@@ -1553,11 +1558,19 @@ function getActionServerURLDynamic() {
   if (isLocalhost) {
     // 本地開發：直接連接到本地 Action Server
     return 'http://localhost:5055';
-  } else {
-    // 生產環境：使用 Vercel 代理（注意：Action Server 需要通過 Rasa 代理）
-    // 或者直接使用環境變數中的 ACTION_SERVER_URL
-    // 這裡暫時使用 Rasa 代理，因為 Action Server 通常通過 Rasa 調用
+  } else if (hostname.includes('zeabur.app')) {
+    // Zeabur 環境：直接連接到 Zeabur Action Server
+    const zeaburActionUrl = 'https://schoolapp.zeabur.app';
+    Utils.logger.log(`🌐 Zeabur 環境，使用 Zeabur Action Server：${zeaburActionUrl}`);
+    return zeaburActionUrl;
+  } else if (hostname.includes('vercel.app')) {
+    // Vercel 環境：使用 Vercel 代理
     return '/api/rasa/webhook';
+  } else {
+    // 其他生產環境：使用默認 Zeabur Action Server URL
+    const defaultActionUrl = 'https://schoolapp.zeabur.app';
+    Utils.logger.log(`🌐 使用默認 Action Server：${defaultActionUrl}`);
+    return defaultActionUrl;
   }
 }
 
@@ -5341,9 +5354,9 @@ async function sendMessageToRasa(message, senderId = 'user-123') {
   try {
     // 獲取 Rasa 服務器 URL（默認直接連接到 Zeabur）
     const rasaUrl = getRasaServerURLDynamic();
-    const webhookUrl = `${rasaUrl}/webhooks/rest/webhook`;
+    const webhookUrl = buildRasaWebhookUrl(rasaUrl);
     
-    Utils.logger.log(`📤 直接連接到 Rasa: ${webhookUrl}`);
+    Utils.logger.log(`📤 連接到 Rasa: ${webhookUrl}`);
     
     const response = await fetch(webhookUrl, {
       method: 'POST',

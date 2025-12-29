@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="國立虎尾科技大學 AI 校園助手，提供智能問答、校園資訊查詢、設施導航等功能">
+  <title>AI 校園助手 - 國立虎尾科技大學</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+  
+  <!-- Leaflet CSS (使用 CDN，添加備用方案) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+        crossorigin="anonymous" 
+        onerror="this.onerror=null; this.href='leaflet.css'; console.warn('CDN 載入失敗，嘗試本地文件');" />
+  
+  <!-- 自訂 CSS -->
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="ai-chat-mobile.css" />
+  
+  <!-- 工具函數庫 -->
+  <script src="utils.js"></script>
+  <!-- 設備檢測 -->
+  <script src="device-detector.js"></script>
+  
+  <!-- 資源載入錯誤處理 -->
+  <script>
+    // 監聽資源載入錯誤
+    window.addEventListener('error', function(e) {
+      if (e.target.tagName === 'LINK' || e.target.tagName === 'SCRIPT') {
+        console.warn('⚠️ 資源載入失敗:', e.target.href || e.target.src);
+      }
+    }, true);
+    
+    // 監聽網絡狀態
+    window.addEventListener('online', function() {
+      console.log('✅ 網絡已連接');
+    });
+    window.addEventListener('offline', function() {
+      console.warn('⚠️ 網絡已斷開，AI 功能可能無法使用');
+    });
+  </script>
+</head>
+<body>
+  <div class="mobile-ai-container">
+    <!-- 頂部導航 -->
+    <header class="mobile-ai-header">
+      <div class="header-content">
+        <h1>🤖 AI 校園助手</h1>
+        <div class="header-actions">
+          <button type="button" id="language-toggle-btn" class="header-btn">🌐 中文</button>
+          <button type="button" id="theme-toggle-btn" class="header-btn">🌙 主題</button>
+          <button type="button" id="mobile-map-toggle-btn" class="header-btn map-btn">🗺️ 地圖</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- 主要內容：對話區域 -->
+    <div class="mobile-chat-container">
+      <div class="chat-messages" id="chat-messages">
+        <div class="message ai-message">
+          <div class="message-avatar">🤖</div>
+          <div class="message-content">
+            <div class="message-text">
+              你好！我是虎尾科技大學的 AI 校園助手 👋
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 設備問題回報表單（由 AI 觸發顯示） -->
+      <div class="issue-form-container" id="issue-form-container" style="display: none;">
+        <div class="issue-form-card">
+          <div class="issue-form-header">
+            <h3>🛠 設備問題回報</h3>
+            <button type="button" class="issue-form-close" id="issue-form-close-btn">✕</button>
+          </div>
+          <p class="issue-form-description">
+            偵測到您回報設備髒污或損壞，請確認或修改以下資訊後送出：
+          </p>
+          <form id="issue-form">
+            <div class="issue-form-row">
+              <label for="issue-campus">校區</label>
+              <select id="issue-campus" required>
+                <option value="">請選擇校區</option>
+                <option value="campus1">第一校區</option>
+                <option value="campus2">第二校區</option>
+                <option value="campus3">第三校區</option>
+              </select>
+            </div>
+            <div class="issue-form-row">
+              <label for="issue-building">建築</label>
+              <select id="issue-building" required>
+                <option value="">請選擇建築</option>
+              </select>
+            </div>
+            <div class="issue-form-row">
+              <label for="issue-floor">樓層</label>
+              <input type="text" id="issue-floor" placeholder="例：3F 或 3 樓" required />
+            </div>
+            <div class="issue-form-row">
+              <label for="issue-problem-type">問題類型（選填）</label>
+              <select id="issue-problem-type">
+                <option value="">自動判斷</option>
+                <option value="hygiene">衛生問題</option>
+                <option value="clogged">堵塞問題</option>
+                <option value="broken">損壞問題</option>
+                <option value="water_quality">水質問題</option>
+                <option value="temperature">溫度問題</option>
+                <option value="electrical">電力問題</option>
+                <option value="structure">結構問題</option>
+                <option value="other">其他問題</option>
+              </select>
+            </div>
+            <div class="issue-form-row">
+              <label for="issue-remark">補充說明（選填）</label>
+              <textarea id="issue-remark" rows="3" placeholder="例：粽三館四樓最靠窗的小便斗裡面有大便"></textarea>
+            </div>
+            <div class="issue-form-row">
+              <label for="issue-photo">上傳照片（選填）</label>
+              <input type="file" id="issue-photo" accept="image/*" />
+              <div id="issue-photo-preview" style="margin-top: 8px; display: none;">
+                <img id="issue-photo-img" style="max-width: 100%; max-height: 200px; border-radius: 4px;" />
+                <button type="button" id="issue-photo-remove" style="margin-top: 8px; width: 100%;">移除</button>
+              </div>
+            </div>
+            <input type="hidden" id="issue-facility-id" />
+            <input type="hidden" id="issue-photo-base64" />
+            <div class="issue-form-summary" id="issue-facility-summary">
+              將自動選擇距離您最近的設備作為預設回報目標。
+            </div>
+            <div class="issue-form-actions">
+              <button type="button" id="issue-cancel-btn" class="issue-btn secondary">取消</button>
+              <button type="submit" class="issue-btn primary">送出回報</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- 輸入區域 -->
+      <div class="chat-input-container">
+        <div class="quick-actions">
+          <button type="button" class="quick-btn" data-query="最近的廁所在哪">🚻 最近廁所</button>
+          <button type="button" class="quick-btn" data-query="最近的飲水機在哪">🚰 最近飲水機</button>
+          <button type="button" class="quick-btn" data-query="最近的垃圾桶在哪">🗑️ 最近垃圾桶</button>
+          <button type="button" class="quick-btn" data-query="智能路線規劃到廁所" id="mobile-smart-route-btn">🧭 智能路線</button>
+          <button type="button" class="quick-btn" data-query="快速回報問題" id="mobile-quick-report-btn">⚡ 快速回報</button>
+          <button type="button" class="quick-btn" data-query="查看統計資訊" id="mobile-statistics-btn">📊 統計</button>
+          <button type="button" class="quick-btn" id="mobile-history-btn">📋 歷史記錄</button>
+        </div>
+        <div class="input-wrapper">
+          <label for="chat-input" class="sr-only">輸入你的問題</label>
+          <input 
+            type="text" 
+            id="chat-input" 
+            class="chat-input" 
+            placeholder="輸入你的問題..."
+            autocomplete="off"
+            aria-label="輸入你的問題"
+          />
+          <button type="button" id="send-btn" class="send-btn">
+            <svg class="send-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22 2L11 13M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 地圖面板（可切換顯示） -->
+    <div class="mobile-map-panel" id="mobile-map-panel" style="display: none;">
+      <div class="map-header">
+        <h3>📍 地圖導航</h3>
+        <div class="map-controls">
+          <button type="button" id="location-btn" class="location-btn">📍 我的位置</button>
+          <select id="map-campus-select" class="map-select">
+            <option value="campus1">第一校區</option>
+            <option value="campus2">第二校區</option>
+            <option value="campus3">第三校區</option>
+          </select>
+          <button type="button" id="mobile-map-close-btn" class="map-close-btn">✕</button>
+        </div>
+      </div>
+      <div class="map-wrapper">
+        <div class="loading" id="map-loading">
+          <div class="spinner"></div>
+          <div>載入地圖中...</div>
+        </div>
+        <div id="ai-map"></div>
+      </div>
+      <div class="map-info" id="map-info">
+        <p>等待 AI 指令...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaflet JavaScript -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  <!-- AI 對話系統（使用相同的 JS，但會自動檢測移動設備） -->
+  <script src="ai-chat.js"></script>
+  <script src="ai-chat-mobile.js"></script>
+</body>
+</html>
+

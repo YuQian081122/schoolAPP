@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="國立虎尾科技大學校園設施地圖系統，提供校園內廁所、飲水機、垃圾桶等設施的位置查詢">
+  <meta name="keywords" content="國立虎尾科技大學,校園地圖,設施查詢,NFU">
+  <title>國立虎尾科技大學 - 校園地圖</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+  
+  <!-- Leaflet CSS (使用 CDN，添加備用方案) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+        crossorigin="anonymous" 
+        onerror="this.onerror=null; this.href='leaflet.css'; console.warn('CDN 載入失敗，嘗試本地文件');" />
+  
+  <!-- 自訂 CSS -->
+  <link rel="stylesheet" href="style.css" />
+  
+  <!-- 工具函數庫 -->
+  <script src="utils.js"></script>
+  <!-- 設備檢測 -->
+  <script src="device-detector.js"></script>
+  
+  <!-- 資源載入錯誤處理 -->
+  <script>
+    // 監聽資源載入錯誤
+    window.addEventListener('error', function(e) {
+      if (e.target.tagName === 'LINK' || e.target.tagName === 'SCRIPT') {
+        console.warn('⚠️ 資源載入失敗:', e.target.href || e.target.src);
+        // 可以在此添加錯誤提示或備用方案
+      }
+    }, true);
+    
+    // 監聽網絡狀態
+    window.addEventListener('online', function() {
+      console.log('✅ 網絡已連接');
+    });
+    window.addEventListener('offline', function() {
+      console.warn('⚠️ 網絡已斷開，部分功能可能無法使用');
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+        <div>
+          <h1>🏫 國立虎尾科技大學</h1>
+          <p>校園設施地圖系統</p>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <button type="button" id="language-toggle-btn" style="padding: 10px 20px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border: none; border-radius: 25px; font-size: 14px; font-weight: 500; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: transform 0.2s;">
+            🌐 中文
+          </button>
+          <a href="ai-chat.html" id="ai-assistant-btn" style="padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 25px; font-size: 14px; font-weight: 500; display: inline-block; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: transform 0.2s;">
+            🤖 AI 助手
+          </a>
+          <script>
+            // 手機自動導向
+            (function() {
+              const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+              const isSmallScreen = window.innerWidth <= 768;
+              if (isMobile || isSmallScreen) {
+                const aiBtn = document.getElementById('ai-assistant-btn');
+                if (aiBtn) {
+                  aiBtn.href = 'ai-chat-mobile.html';
+                }
+              }
+            })();
+          </script>
+        </div>
+      </div>
+    </header>
+
+    <div class="controls">
+      <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center; width: 100%;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <h3>選擇校區：</h3>
+          <select id="campus-select">
+            <option value="campus1">第一校區</option>
+            <option value="campus2">第二校區</option>
+            <option value="campus3">第三校區</option>
+          </select>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <h3>篩選設施：</h3>
+          <div class="filter-group">
+            <button class="filter-btn toilet active" data-type="toilet">
+              🚻 廁所
+            </button>
+            <button class="filter-btn water active" data-type="water">
+              🚰 飲水機
+            </button>
+            <button class="filter-btn trash active" data-type="trash">
+              🗑️ 垃圾桶
+            </button>
+          </div>
+        </div>
+        <div class="theme-toggle">
+          <h3>主題：</h3>
+          <div class="theme-toggle-buttons">
+            <button class="theme-btn" data-mode="dark">深色</button>
+            <button class="theme-btn" data-mode="light">淺色</button>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <button type="button" id="get-location-btn" style="padding: 10px 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; border-radius: 25px; font-size: 14px; font-weight: 500; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: transform 0.2s;" title="取得您目前的位置">
+            📍 取得位置
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="map-wrapper">
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div>載入地圖中...</div>
+      </div>
+      <div id="map"></div>
+    </div>
+
+    <div class="info-panel">
+      <h2>📊 設施統計</h2>
+      <div class="stats">
+        <div class="stat-card">
+          <div class="icon">🚻</div>
+          <div class="number" id="toilet-count">0</div>
+          <div class="label">廁所</div>
+        </div>
+        <div class="stat-card">
+          <div class="icon">🚰</div>
+          <div class="number" id="water-count">0</div>
+          <div class="label">飲水機</div>
+        </div>
+        <div class="stat-card">
+          <div class="icon">🗑️</div>
+          <div class="number" id="trash-count">0</div>
+          <div class="label">垃圾桶</div>
+        </div>
+        <div class="stat-card">
+          <div class="icon">📍</div>
+          <div class="number" id="total-count">0</div>
+          <div class="label">總計</div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <h3>圖例說明</h3>
+        <div class="legend-items">
+          <div class="legend-item">
+            <div class="legend-color toilet"></div>
+            <span>廁所</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color water"></div>
+            <span>飲水機</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color trash"></div>
+            <span>垃圾桶</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>育秀杯創意獎《AI賦能 永續未來》AI Enables a Sustainable Future</p>
+    </footer>
+  </div>
+
+  <!-- 設施詳細資料模態框 -->
+  <div id="facility-detail-modal" class="modal">
+    <div class="modal-content facility-detail-content">
+      <div class="modal-header">
+        <h2 id="detail-facility-name">設施詳細資料</h2>
+        <span class="close" id="close-detail-modal">&times;</span>
+      </div>
+      <div class="facility-detail-body" id="facility-detail-body">
+        <!-- 內容將由 JavaScript 動態生成 -->
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Leaflet JavaScript -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  <!-- 自訂 JavaScript -->
+  <script src="script.js"></script>
